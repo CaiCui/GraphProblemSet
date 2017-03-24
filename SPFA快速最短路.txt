@@ -1,0 +1,122 @@
+//SPFA算法实例
+#include<iostream>
+#include<cstring>
+#include<cstdio>
+#include<vector>
+#include<queue>
+#include<algorithm>
+using namespace std;
+#define INF 1000000//无穷大
+#define MAXN 10
+#define input_fast std::ios::sync_with_stdio(false);std::cin.tie(0)//输入流开关,提高速度
+struct ArcNode{
+  int to;
+  int weight;
+  ArcNode *next;
+};//定义边的数据结构
+queue<int>Q;//定义维护队列
+int n;
+ArcNode *List[MAXN];//边链表头指针数组
+int inq[MAXN];//顶点入队标志
+int dist[MAXN],path[MAXN];
+
+void SPFA(int src)
+{
+    int i,u;//u为队列头顶点序号
+    ArcNode *temp;
+    for(i=0;i<n;i++)
+    {
+        dist[i]=INF;
+        path[i]=src;
+        inq[i]=0;
+    }
+    dist[src]=0;
+    path[src]=src;
+    inq[src]++;
+    Q.push(src);
+    while(!Q.empty())
+    {
+        u=Q.front();
+        Q.pop();
+        inq[u]--;
+        temp=List[u];
+        while(temp!=NULL)
+        {
+            int v=temp->to;
+            if(dist[v]>dist[u]+temp->weight)
+            {
+                dist[v]=dist[u]+temp->weight;
+                path[v]=u;
+                if(!inq[v])
+                {
+                    Q.push(v);
+                    inq[v]++;
+                }
+
+            }
+            temp=temp->next;
+        }
+    }
+
+}
+int main()
+{
+    int i,j;
+    int u,v,w;//边起点终点和权值
+    printf("请输入模拟有向图的顶点个数:\n");
+    scanf("%d",&n);
+    memset(List,0,sizeof(List));
+    ArcNode *temp;
+    printf("请输入模拟有向图的各边起点终点和权值(-1,-1,-1)结束:\n");
+    while(true)
+    {
+        scanf("%d%d%d",&u,&v,&w);
+        if(u==-1&&v==-1&&w==-1)
+            break;
+        temp=new ArcNode;
+        //邻接图构造
+        temp->to=v;
+        temp->weight=w;
+        temp->next=NULL;
+        if(List[u]==NULL)
+            List[u]=temp;
+        else
+        {
+            temp->next=List[u];
+            List[u]=temp;
+        }
+    }
+    SPFA(0);//模拟0到其他顶点的最短路径
+    for(j=0;j<n;j++)//释放内存
+    {
+        temp=List[j];
+        while(temp!=NULL)
+        {
+            List[j]=temp->next;
+            delete temp;
+            temp=List[j];
+        }
+    }
+    int shortest[MAXN];
+    for(int i=1;i<n;i++)
+    {
+        printf("0到顶点%d的路径长度为 ",i);
+        printf("%d\t",dist[i]);//输出源点0到i的最短路径长度
+        //以下是路径输出
+        memset(shortest,0,sizeof(shortest));
+        int k=0;
+        shortest[k]=i;
+        while(path[shortest[k]]!=0)
+        {
+            k++;
+            shortest[k]=path[shortest[k-1]];
+        }
+        k++;
+        shortest[k]=0;
+        printf("对应路径为： ");
+        for(j=k;j>0;j--)
+            printf("%d->",shortest[j]);
+        printf("%d\n",shortest[0]);
+
+    }
+}
